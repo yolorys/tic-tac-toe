@@ -9,6 +9,10 @@ function myGameboard(){
             gameBoardArr[row][col] = playerMark;
         },
 
+        getSpot: function(row, col){
+            return gameBoardArr[row][col];
+        },
+
         printBoard: function(){
             for (const row of gameBoardArr){
                 console.log(row);
@@ -73,7 +77,7 @@ function player(name, mark){
 
 function gameControl(){
     let players = [];
-    let gameboard = myGameboard();
+    let gameboard;
     let currentPlayerIndex = 0;
     let gameOver = false;
 
@@ -81,42 +85,61 @@ function gameControl(){
     gameText.textContent = "Game hasn't started!";
     gameText.setAttribute("class", "gametxt")
     container.appendChild(gameText);
+
+    let player1CurrentName = "Player 1";
+    let player2CurrentName = "Player 2"; //Defaults
     
     return {
 
         startGame: function(player1Name, player2Name){
+            player1CurrentName = player1Name;
+            player2CurrentName = player2Name;
+
+            gameboard = myGameboard();
+
+            const allCells = document.querySelectorAll('.grid-container div');
+            allCells.forEach(cell => {
+                cell.textContent = '';
+            });
+
+            players = [];
+
             players.push(player(player1Name, 'X'));
             players.push(player(player2Name, 'O'));
             currentPlayerIndex = 0;
             gameOver = false;
-            console.log(`Game Started! Player1: ${player1Name} vs Player2: ${player2Name}`);
-            gameboard.printBoard();
-            console.log(`${player1Name} starts.`);
+            gameText.innerHTML = `Game Started! Player1: ${player1Name} vs Player2: ${player2Name}<br>${player1Name} starts.`;
+
         },
 
         playTurn: function(row, col){
             if (gameOver) {
-                gameText.content = "Game is already over!";
-                console.log("Game is already over!");
+                gameText.textContent = "Game is already over! Reset to start another game.";
                 return;
             }
 
-            gameboard.markSpot(row, col, players[currentPlayerIndex].mark);
-            gameboard.printBoard();
+            if (gameboard.getSpot(row, col) !== "") {
+                gameText.textContent = "That spot is already taken. Choose another.";
+                return false;
+            }
+
+            const currentMark = players[currentPlayerIndex].mark;
+            gameboard.markSpot(row, col, currentMark);
 
             if (gameboard.checkWin()){
                 gameText.textContent = `${players[currentPlayerIndex].name} has won!`;
-                console.log(`${players[currentPlayerIndex].name} has won!`);
                 gameOver = true;
+                return true;
             }
             else if (gameboard.checkTie()){
                 gameText.textContent = `The game was a tie!`;
-                console.log("The game was a tie!");
                 gameOver = true;
+                return true
             }
             else{
                 this.switchPlayer();
-                console.log(`It's ${players[currentPlayerIndex].name}'s turn.`);
+                gameText.textContent = `It's ${players[currentPlayerIndex].name}'s turn.`;
+                return true
             }
         },
 
@@ -124,11 +147,18 @@ function gameControl(){
             currentPlayerIndex = 1 - currentPlayerIndex;
         },
 
-        currentMark: function(){
-            return players[currentPlayerIndex].mark;
+        getGameBoard: function(){
+            return gameboard;
+        },
+
+        isGameOver: function() {
+            return gameOver;
+        },
+        
+        resetGame: function() {
+            this.startGame(player1CurrentName, player2CurrentName);
         }
 
-        //to be continued
     }
 }
 const container = document.querySelector(".container");
@@ -155,78 +185,23 @@ myForm.addEventListener('submit', function(event) {
 const gridContainer = document.querySelector('.grid-container');
 const cells = gridContainer.querySelectorAll('div');
 
-const cellOne = document.querySelector('.one');
-const cellTwo = document.querySelector('.two');
-const cellThree = document.querySelector('.three');
-const cellFour = document.querySelector('.four');
-const cellFive = document.querySelector('.five');
-const cellSix = document.querySelector('.six');
-const cellSeven = document.querySelector('.seven');
-const cellEight = document.querySelector('.eight');
-const cellNine = document.querySelector('.nine');
-
-
-
 cells.forEach(cell => {
-    let cellRow = 0;
-    let cellCol = 0;
     cell.addEventListener('click', function(event){
-        function currentCellMark (){
-            if (game.currentMark() == "X"){
-                event.target.textContent = "X";
-            }
-            else {
-                event.target.textContent = "O";
-            }
-        }
-
-        if (event.target.getAttribute("class") == "one"){
-            cellRow = 0;
-            cellCol = 0;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "two"){
-            cellRow = 0;
-            cellCol = 1;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "three"){
-            cellRow = 0;
-            cellCol = 2;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "four"){
-            cellRow = 1;
-            cellCol = 0;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "five"){
-            cellRow = 1;
-            cellCol = 1;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "six"){
-            cellRow = 1;
-            cellCol = 2;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "seven"){
-            cellRow = 2;
-            cellCol = 0;
-            currentCellMark();
-        }
-        else if (event.target.getAttribute("class") == "eight"){
-            cellRow = 2;
-            cellCol = 1;
-            currentCellMark();
-        }
-        else {
-            cellRow = 2;
-            cellCol = 2;
-            currentCellMark();
-        }
-
-        game.playTurn(cellRow, cellCol);
+        const clickedCell = event.target;
         
+
+        const cellRow = parseInt(clickedCell.dataset.row);
+        const cellCol = parseInt(clickedCell.dataset.col);
+
+        const moveSuccessful = game.playTurn(cellRow, cellCol);
+
+        if (moveSuccessful){
+            clickedCell.textContent = game.getGameBoard().getSpot(cellRow, cellCol);
+        }
     })
 })
+
+const reset = document.querySelector(".reset");
+reset.addEventListener('click', () => {
+    game.resetGame();
+});
