@@ -7,11 +7,36 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-        <header>
-        <h1>
-            Tic Tac Toe
-        </h1>
-    </header>
+    <div class="container">
+        <div class="form-container">
+            <h2>Register your names here to start the game!</h2>
+            <form action="#" method="post">
+                <div class="form-group">
+                    <label for="player1-name">1st Player's name: </label>
+                    <input type="text" id="player1-name" name="player1-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="player2-name">2nd Player's name:</label>
+                    <input type="text" id="player2-name" name="player2-name" required>
+                </div>
+                <button type="submit">Play</button>
+            </form>
+        </div>
+        <div class="mid">
+            <h1>Tic Tac Toe</h1>
+            <div class="grid-container">
+                <div class="one"></div>
+                <div class="two"></div>
+                <div class="three"></div>
+                <div class="four"></div>
+                <div class="five"></div>
+                <div class="six"></div>
+                <div class="seven"></div>
+                <div class="eight"></div>
+                <div class="nine"></div>
+            </div>
+        </div>
+    </div>
 
 
     <script src="script.js"></script>    
